@@ -16,10 +16,10 @@ model User {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
-  name       String
-  budget     Int
-  income     Int
-  spend      Int
+  name      String
+  budget     Int?
+  income     Int?
+  spend      Int?
   isVerified Boolean @default(false)
 
   plans       Plan[]
