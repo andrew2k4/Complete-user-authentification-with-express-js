@@ -1,38 +1,18 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
 const userRoutes = Router();
 const prisma = new PrismaClient();
 
-//create user
-userRoutes.post("/", async (req, res) => {
-  const { email, name } = req.body;
-
-  const results = await prisma.user.create({
-    data: {
-      email,
-      name,
-    },
-  });
-
-  res.json(results);
-});
-
-//get user
-userRoutes.get("/:id", async (req, res) => {
-  const { id } = req.params;
-  const user = await prisma.user.findUnique({ where: { id: Number(id) } });
-  res.json(user);
-});
-
 //update user
-userRoutes.put("/:id", async (req, res) => {
-  const { id } = req.params;
+userRoutes.put("/", async (req: Request, res: Response) => {
+  //@ts-ignore
+  const user = req.user;
   const { name, income } = req.body;
 
   try {
     const result = await prisma.user.update({
-      where: { id: Number(id) },
+      where: { id: Number(user?.id) },
       data: {
         name,
         income,
@@ -45,10 +25,23 @@ userRoutes.put("/:id", async (req, res) => {
 });
 
 //delete user
-userRoutes.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-  await prisma.user.delete({ where: { id: Number(id) } });
-  res.status(501).json({ error: `not Implemented: ${id}` });
+userRoutes.delete("/", async (req: Request, res: Response) => {
+  //@ts-ignore
+  const user = req.user;
+  console.log(user);
+  try {
+    await prisma.transaction.deleteMany({
+      where: { userId: Number(user.id) },
+    });
+    await prisma.plan.deleteMany({ where: { userId: Number(user.id) } });
+    await prisma.token.deleteMany({ where: { userId: Number(user.id) } });
+    await prisma.user.delete({ where: { id: Number(user.id) } });
+
+    res.sendStatus(200);
+  } catch (e) {
+    res.status(401).json({ error: "failed to delete user" });
+    console.log(e);
+  }
 });
 
 export default userRoutes;

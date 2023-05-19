@@ -16,14 +16,30 @@ model User {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
-  name      String
+  name      String?
   budget     Int?
   income     Int?
   spend      Int?
   isVerified Boolean @default(false)
 
+  tokens Token[]
   plans       Plan[]
   transaction Transaction[]
+}
+
+model Token {
+  id Int @id @default(autoincrement())
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  type String // "EMAIL" or "API"
+  emailToken String? @unique
+
+  valid Boolean @default(true)
+  expiration DateTime
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Plan {
@@ -50,8 +66,8 @@ model Transaction {
   price       Int
   description String
 
-  planId Int
-  plan   Plan @relation(fields: [planId], references: [id])
+  planId Int?
+  plan   Plan? @relation(fields: [planId], references: [id])
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
