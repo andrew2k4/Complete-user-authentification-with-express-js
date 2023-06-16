@@ -11,64 +11,29 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  email    String   @unique
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-
-  name      String?
-  budget     Int?
-  income     Int?
-  spend      Int?
-  isVerified Boolean @default(false)
-
-  tokens Token[]
-  plans       Plan[]
-  transaction Transaction[]
-}
-
-model Token {
   id Int @id @default(autoincrement())
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  type String // "EMAIL" or "API"
-  emailToken String? @unique
+  email String @unique
+  password String 
+  name String
+  address String
 
+  Image String?
+  bio String?
+
+  session Session[]
+}
+ 
+model Session {
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userAgent String
   valid Boolean @default(true)
-  expiration DateTime
 
-  userId Int
   user User @relation(fields: [userId], references: [id])
-}
-
-model Plan {
-  id       Int      @id @default(autoincrement())
-  createAt DateTime @default(now())
-
-  categorie     String
-  planName      String
-  expectedMoney Int
-  spentMoney    Int
-  expiredAt     DateTime
-
   userId Int
-  user   User @relation(fields: [userId], references: [id])
-
-  transactions Transaction[]
-}
-
-model Transaction {
-  id       Int      @id @default(autoincrement())
-  createAt DateTime @default(now())
-
-  type        String
-  price       Int
-  description String
-
-  planId Int?
-  plan   Plan? @relation(fields: [planId], references: [id])
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
 }

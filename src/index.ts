@@ -1,19 +1,15 @@
 import express from "express";
-
-import userRoutes from "./routes/userRoutes";
-import planRoutes from "./routes/planRoutes";
-import transactionRoutes from "./routes/transactionRoutes";
-import authRoutes from "./routes/authRoutes";
-import { authenticateToken } from "./middlewares/authMiddleware";
+import userRoutes from "./routes/users.routes";
+import sessionRoutes from "./routes/session.routes";
+import deserializeUser from "./middelwares/deserializeUser";
 
 const app = express();
 
 app.use(express.json());
-app.use("/user/", authenticateToken, userRoutes);
-app.use("/plan/:id", authenticateToken, planRoutes);
-app.use("/transaction", authenticateToken, transactionRoutes);
-app.use("/auth", authRoutes);
+app.use(deserializeUser);
+app.use("/api/users", userRoutes);
+app.use("/api/session", sessionRoutes);
 
 app.listen(3000, () => {
-  console.log("server ready");
+  console.log("server ready ");
 });
