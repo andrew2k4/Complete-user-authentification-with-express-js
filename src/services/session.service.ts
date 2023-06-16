@@ -20,10 +20,6 @@ export async function findSession(
   return prisma.session.findMany({ where: query });
 }
 
-export async function findUniqueSession(query: number) {
-  return prisma.session.findUniqueOrThrow({ where: { id: query } });
-}
-
 export async function updateSession(
   query: Omit<
     Session,
