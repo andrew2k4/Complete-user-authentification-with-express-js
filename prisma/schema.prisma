@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,31 +7,163 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id Int @id @map("_id")
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email String @unique
-  password String 
-  name String
-  address String
+  firstName String
+  lastName  String
+  email     String @unique
+  password  String
 
-  Image String?
-  bio String?
+  birthDate DateTime
 
-  session Session[]
+  verificationCode  String    @default(uuid()) @db.Uuid
+  passwordResetCode String?
+  verified          Boolean   @default(false)
+  role              Role      @default(CUSTOMER)
+  customer          Customer?
+  vendor            Vendor?
+  sessions          Session[]
 }
- 
+
+enum Role {
+  CUSTOMER
+  VENDOR
+}
+
+model Customer {
+  id String @id @default(cuid())
+
+  address      String?
+  phoneNumber  Int?    @unique
+  profileImage String?
+  bio          String?
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+}
+
+model Vendor {
+  id String @id @default(cuid())
+
+  accepted Boolean @default(false)
+
+  cniImage    String
+  image       String
+  phoneNumber Int    @unique
+
+  profileImage String?
+  bio          String?
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  productsItems ProductItem[]
+}
+
 model Session {
-  id Int @id @map("_id")
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userAgent String
+  valid     Boolean  @default(true)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  parent   Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
+  parentId Int?
+
+  children Category[] @relation("CategoryToCategory")
+
+  variations   Variation[]
+  productsItem ProductItem[]
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+
+  name       String
+  price      Int
+  coverImage String
+
+  productItem   ProductItem @relation(fields: [productItemId], references: [id])
+  productItemId String      @unique
+}
+
+model ProductItem {
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userAgent String
-  valid Boolean @default(true)
+  name        String
+  price       Int
+  coverImage  String
+  description String
+  images      String[]
+  keyWords    String[]
 
-  user User @relation(fields: [userId], references: [id])
-  userId Int
+  state   State
+  color   Color[]
+  matter  Mater[]
+  brand   Brand   @relation(fields: [brandId], references: [id])
+  brandId Int
+
+  vendor   Vendor   @relation(fields: [vendorId], references: [id])
+  vendorId String
+  product  Product?
+
+  categoryId Category[]
+}
+
+model Variation {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  category        Category          @relation(fields: [categoryId], references: [id])
+  categoryId      Int
+  variationOption VariationOption[]
+}
+
+model VariationOption {
+  id    Int    @id @default(autoincrement())
+  value String
+
+  variation   Variation @relation(fields: [variationId], references: [id])
+  variationId Int
+}
+
+enum State {
+  NEWWITHTAG
+  NEWWITHOUTTAG
+  VERYGOODSTATE
+  GOODSTATE
+  SATISFYING
+}
+
+model Brand {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  ProductItem ProductItem[]
+}
+
+model Color {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  ProductItem ProductItem[]
+}
+
+model Mater {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  ProductItem ProductItem[]
 }
